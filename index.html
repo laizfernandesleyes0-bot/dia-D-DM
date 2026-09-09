@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafio do Universo DM</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(135deg,#eef7ff,#fffdf5);
+    color:#17324d;min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:auto;padding:24px 16px 40px}
+  .card{
+    background:#fff;border-radius:24px;padding:28px;
+    box-shadow:0 8px 30px rgba(23,50,77,.12);
+    border:1px solid #e5edf4;
+  }
+  .top{text-align:center}
+  .tag{
+    display:inline-block;background:#e9f4ff;color:#1769aa;
+    padding:7px 13px;border-radius:999px;font-weight:700;font-size:13px;
+  }
+  h1{margin:14px 0 6px;font-size:30px}
+  .subtitle{margin:0 auto 20px;color:#5d7182;line-height:1.45}
+  .progress{height:9px;background:#e8eef3;border-radius:99px;overflow:hidden;margin:18px 0 24px}
+  .bar{height:100%;width:0;background:#237bb8;transition:.3s}
+  .question{font-size:21px;font-weight:700;line-height:1.35;margin-bottom:18px}
+  .options{display:grid;gap:11px}
+  button{
+    border:2px solid #dce7ef;background:#fff;border-radius:14px;
+    padding:15px;text-align:left;font-size:16px;color:#17324d;
+    cursor:pointer;transition:.15s;
+  }
+  button:hover{border-color:#237bb8;background:#f7fbff}
+  button:disabled{cursor:default}
+  .correct{border-color:#3a8d62!important;background:#edf9f2!important}
+  .wrong{border-color:#c85a5a!important;background:#fff1f1!important}
+  .feedback{
+    margin-top:18px;padding:14px 16px;border-radius:14px;
+    background:#f3f7fa;line-height:1.45;display:none;
+  }
+  .next{
+    display:none;width:100%;margin-top:14px;text-align:center;
+    background:#237bb8;color:#fff;border:0;font-weight:700;
+  }
+  .result{text-align:center;display:none}
+  .score{font-size:50px;font-weight:800;color:#237bb8;margin:10px}
+  .result h2{margin-bottom:8px}
+  .restart{
+    background:#237bb8;color:white;border:0;text-align:center;
+    font-weight:700;width:100%;margin-top:20px;
+  }
+  .note{
+    margin-top:20px;padding:12px 14px;border-left:4px solid #f0c64b;
+    background:#fffaf0;color:#6d5b28;font-size:13px;line-height:1.45;
+  }
+  .footer{text-align:center;color:#71818e;font-size:12px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="top">
+      <span class="tag">MULTIVERSO DA SEGURANÇA • DM</span>
+      <h1>Desafio do Universo DM</h1>
+      <p class="subtitle">Você consegue identificar a conduta segura? Teste seus conhecimentos em HGT, NPO e insulinas.</p>
+    </div>
+
+    <div id="game">
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="question" id="question"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next" id="next">Próxima pergunta →</button>
+    </div>
+
+    <div class="result" id="result">
+      <div class="tag">MISSÃO CONCLUÍDA</div>
+      <div class="score" id="score"></div>
+      <h2 id="resultTitle"></h2>
+      <p id="resultText"></p>
+      <button class="restart" onclick="restart()">Jogar novamente</button>
+    </div>
+
+    <div class="note">
+      <strong>Material educativo:</strong> os tempos de ação das insulinas podem variar conforme formulação, paciente e via. Sempre siga a prescrição e o protocolo institucional.
+    </div>
+  </div>
+  <div class="footer">Pequenas ações hoje, grandes desfechos amanhã. • Prevenir também é cuidar.</div>
+</div>
+
+<script>
+const questions = [
+  {
+    q:"Paciente em NPO possui prescrição de HGT de 2/2h. O que fazer?",
+    a:[
+      "Suspender o HGT porque o paciente está em jejum.",
+      "Manter a monitorização conforme prescrição e protocolo institucional.",
+      "Realizar somente se o paciente apresentar sintomas.",
+      "Realizar apenas antes do almoço e jantar."
+    ],
+    c:1,
+    e:"NPO não significa sem HGT. Se houver prescrição de monitorização de 2/2h, ela deve ser mantida conforme a prescrição e o protocolo institucional."
+  },
+  {
+    q:"Em relação ao HGT antes das refeições, qual cuidado é especialmente importante?",
+    a:[
+      "Registrar somente valores alterados.",
+      "Realizar e registrar o HGT antes das refeições, com atenção especial ao café da manhã.",
+      "Registrar apenas no final do plantão.",
+      "Não é necessário registrar se o valor estiver dentro da meta."
+    ],
+    c:1,
+    e:"Realizar não basta: o resultado precisa ser registrado corretamente para garantir continuidade e segurança do cuidado."
+  },
+  {
+    q:"Qual grupo de insulinas costuma apresentar início de ação em cerca de 5–15 minutos e pico aproximado de 0,5–2 horas?",
+    a:[
+      "NPH",
+      "Regular",
+      "Lispro, Aspart ou Glulisina",
+      "Degludeca"
+    ],
+    c:2,
+    e:"Análogos de ação rápida, como lispro, aspart e glulisina, apresentam início rápido e pico precoce. Os tempos podem variar conforme a formulação."
+  },
+  {
+    q:"Qual opção corresponde à insulina Regular humana?",
+    a:[
+      "Início 0,5–1 h; pico 2–3 h; duração 5–8 h.",
+      "Início 2–4 h; pico 4–10 h; duração 10–18 h.",
+      "Início imediato; sem pico; duração 42 h.",
+      "Início 6 h; sem pico; duração 36 h."
+    ],
+    c:0,
+    e:"A Regular humana é classificada como de ação curta/rápida, com início e pico mais tardios que os análogos ultrarrápidos/rápidos."
+  },
+  {
+    q:"Qual perfil é típico da NPH?",
+    a:[
+      "Início 2–4 h; pico 4–10 h; duração 10–18 h.",
+      "Início 5–15 min; pico 0,5–2 h.",
+      "Sem pico e duração de aproximadamente 42 h.",
+      "Início 0,5–1 h; pico 2–3 h; duração 5–8 h."
+    ],
+    c:0,
+    e:"A NPH é uma insulina de ação intermediária e apresenta pico de ação."
+  },
+  {
+    q:"Paciente com DM está em NPO e apresenta alteração importante da glicemia. Qual atitude é mais segura?",
+    a:[
+      "Ignorar porque ele não está se alimentando.",
+      "Manter a monitorização prescrita, comunicar alterações e seguir a conduta/protocolo institucional.",
+      "Suspender todos os controles até voltar a se alimentar.",
+      "Registrar somente se houver solicitação no final do plantão."
+    ],
+    c:1,
+    e:"Em NPO, a monitorização continua sendo importante. Alterações glicêmicas devem ser reconhecidas, registradas e comunicadas conforme prescrição e protocolo."
+  }
+];
+
+let current=0, score=0, answered=false;
+
+const qEl=document.getElementById("question");
+const optEl=document.getElementById("options");
+const feedback=document.getElementById("feedback");
+const next=document.getElementById("next");
+const bar=document.getElementById("bar");
+
+function load(){
+  answered=false;
+  const item=questions[current];
+  qEl.textContent=(current+1)+". "+item.q;
+  optEl.innerHTML="";
+  feedback.style.display="none";
+  next.style.display="none";
+  bar.style.width=((current)/questions.length*100)+"%";
+
+  item.a.forEach((text,i)=>{
+    const b=document.createElement("button");
+    b.textContent=text;
+    b.onclick=()=>answer(i,b);
+    optEl.appendChild(b);
+  });
+}
+function answer(i,btn){
+  if(answered)return;
+  answered=true;
+  const item=questions[current];
+  const buttons=[...optEl.children];
+  buttons.forEach(b=>b.disabled=true);
+  if(i===item.c){score++;btn.classList.add("correct");feedback.innerHTML="<strong>✓ Acertou!</strong><br>"+item.e;}
+  else{btn.classList.add("wrong");buttons[item.c].classList.add("correct");feedback.innerHTML="<strong>✕ Quase!</strong><br>"+item.e;}
+  feedback.style.display="block";
+  next.style.display="block";
+}
+next.onclick=()=>{
+  current++;
+  if(current<questions.length)load();
+  else finish();
+};
+function finish(){
+  document.getElementById("game").style.display="none";
+  document.getElementById("result").style.display="block";
+  document.getElementById("score").textContent=score+"/"+questions.length;
+  let title,text;
+  if(score===questions.length){
+    title="Guardião(ã) da Glicemia 🛡️";
+    text="Excelente! Você dominou o desafio do Universo DM.";
+  }else if(score>=4){
+    title="Quase especialista! 🚀";
+    text="Mandou muito bem. Mais uma rodada e você chega ao domínio completo.";
+  }else if(score>=2){
+    title="Explorador(a) do Universo DM 🔎";
+    text="Você já encontrou o caminho. Revise os pontos-chave e tente novamente.";
+  }else{
+    title="Hora de explorar novamente 🌎";
+    text="Sem problema! O objetivo é aprender e fortalecer a segurança do paciente.";
+  }
+  document.getElementById("resultTitle").textContent=title;
+  document.getElementById("resultText").textContent=text;
+}
+function restart(){
+  current=0;score=0;
+  document.getElementById("game").style.display="block";
+  document.getElementById("result").style.display="none";
+  load();
+}
+load();
+</script>
+</body>
+</html>
